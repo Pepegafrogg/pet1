@@ -1,31 +1,25 @@
-import React, { useMemo, useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { usePosts } from "./hooks/usePosts";
 import PostFilter from "./components/PostFilter";
 import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
 import MyButton from "./components/UI/button/MyButton";
 import MyModal from "./components/UI/MyModal/MyModal";
 import './styles/styles.css'
+import PostService from "./API/PostService";
+import Loader from "./components/UI/Loader/Loader";
+import { useFetching } from "./hooks/useFetching";
 
 function App() {
-   const [posts, setPosts] = useState([
-      { id: 1, title: 'asdJavaScript1', body: 'bDescription' },
-      { id: 2, title: 'gdfJavaScript2', body: 'cDescription' },
-      { id: 3, title: 'fffJavaScript3', body: 'Description' },
-   ]);
-   const [filter, setFilter] = useState({ query: '', selectedSort: '' });
+   const [posts, setPosts] = useState([]);
+   const [filter, setFilter] = useState({ query: '', sort: '' });
    const [visible, setVisible] = useState(false);
-
-
-   const sortedPosts = useMemo(() => {
-      if (filter.selectedSort.length > 0) {
-         return [...posts].sort((a, b) => a[filter.selectedSort].localeCompare(b[filter.selectedSort]))
-      }
-      return posts
-   }, [posts, filter.selectedSort])
-
-   const sortedAndSearchedPosts = useMemo(() => {
-      return sortedPosts.filter(post => post.title.toLocaleLowerCase().includes(filter.query.toLocaleLowerCase()))
-   }, [filter.query, sortedPosts])
+   const sortedAndSearchedPosts = usePosts(posts, filter.query, filter.sort)
+   const [fetchPosts, isPostsLoading, postError] = useFetching(async () => {
+      const posts = await PostService.getAll()
+      setPosts(posts)
+   })
 
    const addPost = (newPost) => {
       setPosts([...posts, newPost])
@@ -34,14 +28,24 @@ function App() {
    const deletePost = (postId) => {
       setPosts(posts.filter(post => post.id !== postId))
    }
+   useEffect(() => {
+      fetchPosts()
+   }, []);
    return (
       <div className="App">
+         {console.log(postError)}
          <MyButton style={{ marginTop: '30px' }} onClick={() => setVisible(true)}>Create post</MyButton>
          <MyModal visible={visible} setVisible={setVisible}> <PostForm addPost={addPost} /></MyModal>
 
          <hr style={{ margin: '15px 0' }} />
          <PostFilter filter={filter} setFilter={setFilter} />
-         <PostList title={'Список постов'} posts={sortedAndSearchedPosts} deletePost={deletePost} />
+         {postError && <h1>Произошла ошибка {postError.message}</h1>}
+         {isPostsLoading
+            ? <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}><Loader /></div>
+            : <PostList title={'Список постов'} posts={sortedAndSearchedPosts} deletePost={deletePost} />
+         }
+
+
 
       </div>
    );
