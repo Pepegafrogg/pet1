@@ -5,7 +5,8 @@
 }
 #root{
    display: flex;
-   justify-content: center;
+   flex-direction: column;
+   align-items: center;
 }
 .App{
    width: 800px;
@@ -17,6 +18,9 @@
    margin-top: 15px;
    justify-content: space-between;
    align-items: center;
+}
+.post__btns{
+   display: flex;
 }
 .remove-btn {
    margin-right: 0.5rem;
@@ -35,4 +39,17 @@
 .post-exit-active {
    transform: translateX(-350px);
    transition: all 500ms ease-in;
+}
+.navBar{
+   width: 100vw;
+   height: 50px;
+   display: flex;
+   align-items: center;
+   justify-content: end;
+   padding: 0 15px;
+   background-color: lightgray;
+
+}
+.navBar__links{
+   margin-left: auto;
 }
